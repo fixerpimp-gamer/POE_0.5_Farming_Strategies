@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PoE2 Farming Strategies — 0.5</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080a06;--bg2:#0f120c;--bg3:#161a12;--bg4:#1d2118;--border:#252b1e;--border2:#3a4230;--gold:#c9a84c;--gold2:#e8c86a;--gold3:#7a6428;--red:#b84040;--green:#4a8a4a;--text:#ccc8b4;--text2:#8a8470;--text3:#504c40;--panel:290px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Crimson Pro',Georgia,serif;overflow:hidden;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);}
+#topbar{height:52px;background:var(--bg2);border-bottom:1px solid var(--border2);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;position:relative;z-index:200;}
+#menu-btn{width:36px;height:36px;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0;transition:all .2s;color:var(--text2);}
+#menu-btn:hover,#menu-btn.open{background:var(--border2);color:var(--gold2);border-color:var(--gold3);}
+#logo{width:28px;height:28px;background:linear-gradient(135deg,var(--gold),var(--red));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;font-family:'Cinzel',serif;font-weight:900;color:var(--bg);}
+#title-block{line-height:1.2;flex-shrink:0;}
+#title-block .t1{font-size:11px;font-weight:700;color:var(--gold2);letter-spacing:2px;font-family:'Cinzel',serif;}
+#title-block .t2{font-size:9px;color:var(--text3);letter-spacing:1px;}
+#searchbox{flex:1;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;padding:0 10px;gap:6px;height:32px;min-width:0;}
+#searchbox input{background:none;border:none;outline:none;color:var(--text);font-family:'Crimson Pro',serif;font-size:14px;width:100%;}
+#searchbox input::placeholder{color:var(--text3);}
+#app{display:flex;height:calc(100vh - 52px);position:relative;}
+#panel{width:var(--panel);height:100%;background:var(--bg2);border-right:1px solid var(--border2);display:flex;flex-direction:column;flex-shrink:0;transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:100;overflow:hidden;}
+#panel-header{padding:12px 14px 8px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.ph-title{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+.ph-count{font-size:12px;color:var(--text2);margin-top:2px;}
+#filter-row{display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+.fchip{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;padding:3px 8px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);cursor:pointer;text-transform:uppercase;transition:all .15s;}
+.fchip:hover,.fchip.on{border-color:var(--gold3);color:var(--gold2);background:var(--bg4);}
+#strat-list{flex:1;overflow-y:auto;}
+.strat-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;position:relative;}
+.strat-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:transparent;transition:background .15s;}
+.strat-item:hover{background:var(--bg3);}
+.strat-item.active{background:var(--bg4);}
+.strat-item.active::before{background:var(--gold3);}
+.si-badge{flex-shrink:0;width:34px;height:34px;border:1px solid var(--tier-col,var(--border2));display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--tier-col,var(--text3));background:rgba(0,0,0,.4);}
+.strat-item[data-tier="S"]{--tier-col:#e8c86a;}
+.strat-item[data-tier="A+"]{--tier-col:#c9a84c;}
+.strat-item[data-tier="A"]{--tier-col:#6a9a5a;}
+.strat-item[data-tier="B+"]{--tier-col:#5a7a9a;}
+.strat-item[data-tier="REQ"]{--tier-col:#b84040;}
+.si-info{min-width:0;flex:1;}
+.si-name{font-family:'Cinzel',serif;font-size:12px;color:var(--text);line-height:1.2;}
+.si-meta{font-size:11px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.strat-item.hidden{display:none;}
+#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99;}
+#main{flex:1;overflow-y:auto;}
+#detail{min-height:100%;display:flex;flex-direction:column;}
+#detail-header{background:var(--bg2);border-bottom:1px solid var(--border2);padding:18px 20px 14px;flex-shrink:0;}
+.dh-top{display:flex;align-items:flex-start;gap:14px;}
+.dh-badge{flex-shrink:0;width:48px;height:48px;border:1px solid var(--tier-col,var(--border2));display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-weight:900;font-size:14px;color:var(--tier-col,var(--text3));}
+.dh-info{flex:1;}
+.dh-name{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:var(--gold2);line-height:1.2;}
+.dh-sub{font-size:13px;color:var(--text2);font-style:italic;margin-top:3px;}
+.dh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-top:14px;}
+.dhs{background:var(--bg3);padding:8px 12px;text-align:center;}
+.dhs-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);display:block;}
+.dhs-val{font-size:13px;color:var(--text);font-weight:600;margin-top:2px;display:block;line-height:1.2;}
+.dhs-val.g{color:var(--green)}.dhs-val.w{color:var(--gold)}.dhs-val.r{color:var(--red)}
+.return-row{padding:10px 20px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.ret-label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);flex-shrink:0;}
+.ret-val{font-size:14px;color:var(--gold2);font-weight:600;}
+.tab-bar{display:flex;border-bottom:1px solid var(--border2);overflow-x:auto;flex-shrink:0;background:var(--bg2);scrollbar-width:none;position:sticky;top:0;z-index:10;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:10px 16px;border-bottom:2px solid transparent;color:var(--text3);cursor:pointer;white-space:nowrap;transition:all .15s;background:none;border-left:none;border-right:none;border-top:none;}
+.tab-btn:hover{color:var(--text2)}.tab-btn.on{color:var(--gold2);border-bottom-color:var(--gold3);}
+.tab-panel{display:none;padding:18px 20px;}.tab-panel.on{display:block;}
+.sec{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold3);margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.sec:first-child{margin-top:0;}
+.steps{list-style:none;}
+.step{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:14px;line-height:1.5;}
+.step:last-child{border-bottom:none;}
+.snum{flex-shrink:0;width:22px;height:22px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'Cinzel',serif;color:var(--gold3);margin-top:2px;}
+.stxt{color:var(--text);}
+.bullets{list-style:none;}
+.bullet{padding:4px 0 4px 14px;position:relative;font-size:14px;color:var(--text);line-height:1.4;}
+.bullet::before{content:'◆';position:absolute;left:0;color:var(--gold3);font-size:7px;top:8px;}
+.bullet.r::before{color:var(--red);}
+.kv{display:flex;flex-direction:column;gap:1px;background:var(--border);margin:6px 0;}
+.kvr{display:grid;grid-template-columns:110px 1fr;background:var(--bg3);}
+.kvk{padding:7px 10px;font-size:11px;color:var(--text3);font-family:'Cinzel',serif;border-right:1px solid var(--border);display:flex;align-items:center;line-height:1.3;}
+.kvv{padding:7px 10px;font-size:13px;color:var(--text);line-height:1.4;}
+.kvv.g{color:var(--green)}.kvv.w{color:var(--gold2)}.kvv.r{color:var(--red)}
+.alert{border:1px solid var(--border2);padding:10px 12px;margin:10px 0;font-size:13px;line-height:1.5;}
+.alert.w{background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.25);}
+.alert.r{background:rgba(184,64,64,.07);border-color:rgba(184,64,64,.25);}
+.alert-lbl{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px;}
+.alert.w .alert-lbl{color:var(--gold3)}.alert.r .alert-lbl{color:var(--red)}
+.drops{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin:6px 0;}
+.drop{background:var(--bg3);padding:8px 10px;}
+.dn{font-size:12px;color:var(--text2);line-height:1.3;}
+.dv{font-size:14px;color:var(--gold2);font-weight:600;margin-top:2px;}
+.trow{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.trow:last-child{border-bottom:none;}
+.tslot{flex-shrink:0;background:var(--border2);color:var(--gold3);font-family:'Cinzel',serif;font-size:8px;padding:3px 6px;letter-spacing:1px;margin-top:2px;}
+.tinfo .tn{font-size:13px;color:var(--text);line-height:1.3;}
+.tinfo .tm{font-size:12px;color:var(--text2);font-style:italic;margin-top:2px;}
+.variant{background:var(--bg);border:1px solid var(--border);padding:12px;margin-bottom:8px;}
+.vname{font-family:'Cinzel',serif;font-size:11px;color:var(--gold2);letter-spacing:1px;margin-bottom:6px;}
+#empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text3);text-align:center;padding:40px;}
+#empty .e-icon{font-size:48px;margin-bottom:16px;opacity:.4;}
+#empty .e-title{font-family:'Cinzel',serif;font-size:14px;color:var(--text2);letter-spacing:2px;}
+#empty .e-sub{font-size:13px;margin-top:6px;font-style:italic;}
+@media(max-width:680px){
+  #panel{position:fixed;left:0;top:52px;bottom:0;transform:translateX(-100%);z-index:150;--panel:min(85vw,290px);width:var(--panel);}
+  #panel.open{transform:translateX(0);}
+  #overlay.show{display:block;}
+  #main{width:100%;}
+  .dh-name{font-size:16px;}
+}
+@media(min-width:681px){
+  #panel{transform:translateX(0)!important;}
+  #panel.closed{transform:translateX(calc(-1 * var(--panel)))!important;margin-right:calc(-1 * var(--panel));}
+}
+</style>
+</head>
+<body>
+<div id="topbar">
+  <div id="menu-btn" onclick="togglePanel()">☰</div>
+  <div id="logo">⚔</div>
+  <div id="title-block"><div class="t1">Farming Strategies</div><div class="t2">PoE2 · 0.5 Return of the Ancients</div></div>
+  <div id="searchbox"><span style="color:var(--text3);font-size:13px">🔍</span><input type="text" id="search" placeholder="Search…" oninput="doSearch(this.value)"></div>
+</div>
+<div id="app">
+  <div id="overlay" onclick="closePanel()"></div>
+  <div id="panel">
+    <div id="panel-header"><div class="ph-title">Strategies</div><div class="ph-count" id="count-label">11 strategies</div></div>
+    <div id="filter-row">
+      <div class="fchip on" onclick="setFilter('all',this)">All</div>
+      <div class="fchip" onclick="setFilter('S',this)">S Tier</div>
+      <div class="fchip" onclick="setFilter('A',this)">A Tier</div>
+      <div class="fchip" onclick="setFilter('league',this)">League</div>
+      <div class="fchip" onclick="setFilter('meta',this)">Meta</div>
+    </div>
+    <div id="strat-list"></div>
+  </div>
+  <div id="main"><div id="detail"><div id="empty"><div class="e-icon">⚔</div><div class="e-title">Select a Strategy</div><div class="e-sub">Choose from the panel to view details</div></div></div></div>
+</div>
+<script>
+const STRATS=[
+{id:'strat_006',tier:'REQ',type:'meta',name:'Atlas Progression',sub:'Meta / Prerequisite — Do This First',ret:'Complete before farming any mechanic',
+stats:[{l:'Points',v:'335 Total',c:'w'},{l:'Investment',v:'Time Only'},{l:'Difficulty',v:'Easy–Med'}],
+tabs:[{label:'Quest Line',id:'p-quest'},{label:'Fast Method',id:'p-fast'},{label:'Atlas Tree',id:'p-tree'},{label:'Masters',id:'p-masters'},{label:'Tips',id:'p-tips'}],
+panels:{'p-quest':`
+<div class="alert r"><span class="alert-lbl">⚠ Critical Rule</span>Atlas points ONLY earned inside the Fortress. Outside maps = ZERO atlas tree points.</div>
+<div class="sec">Quest Steps</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Ziggurat Refuge → Clear Precursor Tower → Fortress rises</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Follow quest → Burning Monolith. Don't grind side nodes.</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Western + Eastern Gateway (T10+) → 3 pts each → enigma fragments</div></li>
+<li class="step"><div class="snum">4</div><div class="stxt"><strong>Arbiter of Ash ⚔</strong> — Touch beacon in boss arena (easy to miss!)</div></li>
+<li class="step"><div class="snum">5</div><div class="stxt">Origin Tower → Patriarch + Matriarch Halls (T15, 7pts each) → Origin Core</div></li>
+<li class="step"><div class="snum">6</div><div class="stxt"><strong>Arbiter of Divinity ⚔</strong> → Section Clear (~40–50 pts per kill × 5)</div></li>
+</ul>
+<div class="sec">Arbiter Fragments</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Ash (3 frags)</div><div class="kvv">Ancient + Faded + Weathered Crisis → Burning Monolith wall</div></div>
+<div class="kvr"><div class="kvk">Divinity (2 frags)</div><div class="kvv">Origin Cradle + Origin Spark → Doriani → Origin Core. Or buy from exchange.</div></div>
+<div class="kvr"><div class="kvk">Sources</div><div class="kvv w">Citadels (colored beams on Atlas) or Currency Exchange</div></div>
+</div>`,
+'p-fast':`
+<div class="alert w"><span class="alert-lbl">⚡ Fast Method</span>Each Arbiter of Divinity kill → choose 1 of 5 fortress sections → ALL nodes complete instantly (~40–50 pts)</div>
+<div class="sec">Finding Halls Outside</div>
+<ul class="bullets">
+<li class="bullet"><strong>Free:</strong> Clear outskirt towers → path to square buildings with light</li>
+<li class="bullet"><strong>Fast:</strong> Grand Project tablet on tower → area freely traversable. Use 2× together.</li>
+<li class="bullet"><strong>Speedrun:</strong> Level 1 maps — boss only, 20–30 sec. Halls need ~T10–11.</li>
+</ul>
+<div class="sec">Tier → Level</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">T6 ⚡</div><div class="kvv w">Level 70 — unlocks irradiated tablets</div></div>
+<div class="kvr"><div class="kvk">T11 ⚡</div><div class="kvv w">Level 75+ — fracturing orbs, exceptional items, major nodes</div></div>
+<div class="kvr"><div class="kvk">T16</div><div class="kvv">Level 80 (max)</div></div>
+</div>`,
+'p-tree':`
+<div class="sec">First Priority — Waystone Sustain</div>
+<ul class="bullets">
+<li class="bullet">Search "waystones" in Atlas tree → grab Rogue Exile drops + map boss quantity nodes</li>
+</ul>
+<div class="sec">New / Returning Players</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Shrine cluster + magic monster boost nodes</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Eons of Contamination (T6) → Evolving Throngs</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">No Simple Battles → Valuable Paths → Specialized Seeker</div></li>
+<li class="step"><div class="snum">4</div><div class="stxt">Chosen Path (Rogue Exiles) → Journey Ahead (Effectiveness)</div></li>
+</ul>
+<div class="sec">Experienced Players</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Rush T6 → Eons of Contamination + A Top the World</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Rush T11 → Curious Durable Stone + Partial Translation</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Hidden Scars (fracturing orbs) + exceptional item nodes</div></li>
+</ul>
+<div class="sec">Most Important Late Node</div>
+<div class="kv"><div class="kvr"><div class="kvk">Tablets Upgrade</div><div class="kvv w">Tablets become Rare with +1 max modifier (4 mods total)</div></div></div>
+<div class="alert r"><span class="alert-lbl">⚠ No Refunds</span>Points cannot be refunded. Multi-choice nodes CAN be changed freely.</div>`,
+'p-masters':`
+<div class="sec">Hilda — Best for Abyss</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Location</div><div class="kvv">Near Ziggurat Refuge (Hilda's Campsite)</div></div>
+<div class="kvr"><div class="kvk">Key bonus</div><div class="kvv">Each different tablet type = +25% explicit effects. 2 types = +50% total.</div></div>
+<div class="kvr"><div class="kvk">⚠ Bug</div><div class="kvv r">Ancient Inscriptions BUGGED in 0.5</div></div>
+</div>
+<div class="sec">Duriani — Best for Breach + Boss Rushing</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Location</div><div class="kvv">Clear a Corrupted Nexus (red area on Atlas)</div></div>
+<div class="kvr"><div class="kvk">Key bonus</div><div class="kvv">Rare monster juice + desert/mountain biomes + free irradiated (fixed)</div></div>
+</div>
+<div class="sec">Jado ★ Best for Ritual / Expedition / Lineage Gems</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Location</div><div class="kvv">Sealed Vault — SW of fortress, west of ritual zone. No quest marker.</div></div>
+<div class="kvr"><div class="kvk">Key bonus</div><div class="kvv w">20% chance to double explicit AND implicit tablet modifiers</div></div>
+<div class="kvr"><div class="kvk">Untold Histories</div><div class="kvv w">35% increased lineage support gem chance — key for anomaly map hunting</div></div>
+</div>`,
+'p-tips':`
+<div class="sec">Easy-to-Miss Tips</div>
+<ul class="bullets">
+<li class="bullet">Touch the <strong>beacon in every map</strong> — NOT just clearing. Can be in boss arena.</li>
+<li class="bullet">Outward towers have <strong>two bosses simultaneously</strong></li>
+<li class="bullet"><strong>Site of Chosen</strong> — on way to Halls, free passive point</li>
+<li class="bullet">Arbiter of Ash Diamond drop — ALWAYS identify before selling (up to 25 div vs 2 div raw)</li>
+</ul>
+<div class="sec">Mechanic Zone Unlocks</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Breach (T14)</div><div class="kvv">Genesis Tree + Hive Mine</div></div>
+<div class="kvr"><div class="kvk">Delirium</div><div class="kvv">5 maps + bosses → Instilling Tree (amulet anointments)</div></div>
+</div>`
+}},
+{id:'strat_007',tier:'S',type:'league',name:'Breach',sub:'Unstable Breach + Genesis Tree — Fubgun',ret:'50+ div/hr raw · 70–80 div/hr with Genesis Tree crafted items',
+stats:[{l:'Return',v:'50–80 div/hr',c:'g'},{l:'Consistency',v:'High',c:'g'},{l:'Difficulty',v:'Easy–Med'}],
+tabs:[{label:'Core Loop',id:'b-loop'},{label:'Tablets',id:'b-tabs'},{label:'Genesis Tree',id:'b-gen'},{label:'Budget',id:'b-bud'}],
+panels:{'b-loop':`
+<div class="alert w"><span class="alert-lbl">⚡ The Math</span>3× tablets (+3 rares each) + 1× unique (+5 rares) = up to 14 extra rares per breach × 4 breaches = massive loot. Jado proc (~1/5 maps): doubles everything.</div>
+<div class="sec">Setup</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Maps</div><div class="kvv">City biome (4 tablet slots). T15, 6–8 mods, high item rarity + monster effectiveness. Use Grand Mirror for 200% Delirium.</div></div>
+<div class="kvr"><div class="kvk">Master</div><div class="kvv w">Jado — Partial Translations + Unforeseen Threats + Unexpected Mission</div></div>
+<div class="kvr"><div class="kvk">Biomes</div><div class="kvv">Desert (best rares) → Mountain (tablets). Duriani makes them spawn more.</div></div>
+</div>
+<div class="sec">Core Loop</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Target city biome in Desert/Mountain area → run unstable breaches every map</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Kill rare monsters at breach end → loot explosion + Hive Blood</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Collect tablets from Mountain biomes (~5 div/20 maps passively)</div></li>
+<li class="step"><div class="snum">4</div><div class="stxt">Travel to Monastery of the Keepers → spend Hive Blood on Genesis Tree</div></li>
+<li class="step"><div class="snum">5</div><div class="stxt">Sell catalysts + crafted belts/rings/amulets</div></li>
+</ul>`,
+'b-tabs':`
+<div class="trow"><div class="tslot">×3</div><div class="tinfo"><div class="tn">Breach tablets — unstable breaches spawn 3 additional rare monsters when stabilized</div><div class="tm">Rolls 1–3. Divine yourself if cheaper than buying 3-roll.</div></div></div>
+<div class="trow"><div class="tslot">×1 UNIQUE</div><div class="tinfo"><div class="tn">Unique Breach tablet — 5 additional rare monsters</div><div class="tm">Prefer NO negative pack size on this tablet.</div></div></div>
+<div class="sec">Secondary Mods — Get 2 of 3 (if only 1, choose #1)</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Mod 1 ★</div><div class="kvv w">Monsters 10–15% increased Effectiveness</div></div>
+<div class="kvr"><div class="kvk">Mod 2</div><div class="kvv">Rare Breach Monsters 5–20% increased Effectiveness</div></div>
+<div class="kvr"><div class="kvk">Mod 3</div><div class="kvv">Items 8–12% increased Rarity in Map</div></div>
+</div>`,
+'b-gen':`
+<div class="alert w"><span class="alert-lbl">💰 Half Your Profit</span>Genesis Tree = 50%+ of total earnings. Belt tree is king.</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Belt Tree ★</div><div class="kvv w">Minion splash / +2 minions → hundreds of div each</div></div>
+<div class="kvr"><div class="kvk">Currency Tree</div><div class="kvv">Catalysts (early) → Divine Orbs + Annulments (mid-late)</div></div>
+<div class="kvr"><div class="kvk">Ring Tree</div><div class="kvv">Left = minion, Right = caster, Center = breach rings (10% chance)</div></div>
+<div class="kvr"><div class="kvk">Amulet Tree</div><div class="kvv">+3 skills + Spirit → sells well</div></div>
+</div>
+<ul class="bullets">
+<li class="bullet">Use LOW level Womb Gifts first to unlock nodes cheaply</li>
+<li class="bullet">Stack Surpassing Chance: 200% = guaranteed 2 items per craft</li>
+<li class="bullet">Respec is FREE — experiment freely</li>
+<li class="bullet">~700–800 Hive Blood per T14–T15 map</li>
+</ul>`,
+'b-bud':`
+<div class="sec">Low Budget Version</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Tablets</div><div class="kvv">Cheap effectiveness-only tablets, no divines needed</div></div>
+<div class="kvr"><div class="kvk">Master</div><div class="kvv">Hilda (if no Jado) — rare monsters + tablet effect</div></div>
+<div class="kvr"><div class="kvk">Per Map</div><div class="kvv g">1.5+ div profit even without fancy setup</div></div>
+</div>`
+}},
+{id:'strat_001',tier:'S',type:'league',name:'Abyss',sub:'Currency / Diamond / Rogue Exile Reborn variants',ret:'40+ div/6h avg · 200 div/8h optimized (Amanu)',
+stats:[{l:'Return',v:'40+ div/6h',c:'g'},{l:'Consistency',v:'High',c:'g'},{l:'Difficulty',v:'Easy–Med'}],
+tabs:[{label:'Variants',id:'a-var'},{label:'Currency Setup',id:'a-cur'},{label:'Advanced Setup',id:'a-adv'},{label:'Mechanic',id:'a-mech'},{label:'Drops',id:'a-drops'}],
+panels:{'a-var':`
+<div class="variant"><div class="vname">◆ Ulaman — Easy / Currency</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Best for</div><div class="kvv">Raw currency, beginners, casual farming</div></div>
+<div class="kvr"><div class="kvk">Key drops</div><div class="kvv w">Currency coffers, Diamond Jewels, Ulaman Gaze = 16 div</div></div>
+</div></div>
+<div class="variant"><div class="vname">◆ Amanu — Hard / High Omens</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Mechanic</div><div class="kvv">Lure mobs OUT of black cloud before killing → triggers rare Omen drop</div></div>
+<div class="kvr"><div class="kvk">Warning</div><div class="kvv r">Strong build required — hard at 100% effectiveness</div></div>
+</div></div>
+<div class="variant"><div class="vname">◆ Rogue Exile Reborn — Diamond Farm</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Mechanic</div><div class="kvv">Exile dies near Abyss → reborn as Lich Born → drops Heart of the Well Diamond</div></div>
+<div class="kvr"><div class="kvk">Key node</div><div class="kvv w">Shadow of Undeath — 50% chance Rogue Exiles influenced by Abysses</div></div>
+<div class="kvr"><div class="kvk">Diamond value</div><div class="kvv w">Identify before selling — up to 25 div vs 2 div raw</div></div>
+</div></div>`,
+'a-cur':`
+<div class="sec">Tablets — Currency Focus (Ulaman)</div>
+<div class="trow"><div class="tslot">Slot 1</div><div class="tinfo"><div class="tn">Abyss — pits twice as likely to have rewards</div><div class="tm">CORE — makes Abyss coffers spawn with currency</div></div></div>
+<div class="trow"><div class="tslot">Slot 2</div><div class="tinfo"><div class="tn">Abyss — chance to contain 4 additional Abyss pits</div><div class="tm">More pits = more coffers = more currency</div></div></div>
+<div class="trow"><div class="tslot">Slot 3</div><div class="tinfo"><div class="tn">Abyss (any mod) OR Overseer (+1 Rogue Exile)</div><div class="tm">Good prefix: Increased rarity of items found</div></div></div>
+<div class="sec">Abyss Combo with Ritual</div>
+<div class="alert w"><span class="alert-lbl">💡 +1 div/map bonus</span>Add 1× Abyss tablet to any ritual setup — kill Abyss rares OUTSIDE their cloud → Omen of Abyssal Echoes + Omen of Light. You're clearing the whole map anyway.</div>
+<div class="sec">Master</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Use</div><div class="kvv w">Hilda — 3× Abyss + 1× Irradiated = 2 types = +50% to ALL tablet mods</div></div>
+<div class="kvr"><div class="kvk">Jado</div><div class="kvv">Partial Translations + Unforeseen Threats + Unexpected Mission</div></div>
+</div>`,
+'a-adv':`
+<div class="sec">Advanced Setup — Hilda + City Maps</div>
+<div class="trow"><div class="tslot">×3</div><div class="tinfo"><div class="tn">Abyss Tablets — must-have: 4 additional Abysses (highest % roll)</div><div class="tm">Also: Abyss modifier chance, 2 additional rare Abyss monsters. Prefix: Item Rarity.</div></div></div>
+<div class="trow"><div class="tslot">×1 city</div><div class="tinfo"><div class="tn">Irradiated Tablet — 4th slot</div><div class="tm">Best: 2 additional map modifiers. Triggers Hilda +25% bonus (different type).</div></div></div>
+<div class="sec">Zone Priority</div>
+<ul class="bullets">
+<li class="bullet"><strong>City maps</strong> — 4 tablet slots</li>
+<li class="bullet"><strong>Cleansed zones</strong> — more packs, Mountain Grid, Fracturing Orbs</li>
+<li class="bullet"><strong>Transition maps</strong> — Duriani + Overseer tablet, run fast</li>
+</ul>
+<div class="sec">Rogue Exile Reborn Tablets</div>
+<div class="trow"><div class="tslot">★ Best</div><div class="tinfo"><div class="tn">Map inhabited by 1 additional Rogue Exile — 40–80ex (10 uses)</div><div class="tm">NEVER buy less than 10 uses. More exiles = more Abyss intersection chances.</div></div></div>`,
+'a-mech':`
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Follow fissures (green snake dots) → kill monsters to close</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Close all fissures → Abyssal monsters emerge</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt"><strong>Black cloud = UNKILLABLE inside.</strong> Lure mobs out first.</div></li>
+<li class="step"><div class="snum">4</div><div class="stxt">Kill outside cloud → triggers rare Omen (Amanu) / Lich Born (Rogue Exile Reborn)</div></li>
+</ul>
+<div class="alert r"><span class="alert-lbl">⚠ Nerf</span>Abyss omen drop rate reduced in 0.5. Still profitable but fewer omens than before.</div>
+<div class="alert r"><span class="alert-lbl">⚠ Chaos Damage</span>Target ~50%+ chaos resistance.</div>`,
+'a-drops':`
+<div class="drops">
+<div class="drop"><div class="dn">Ulaman Gaze (Eye)</div><div class="dv">16 div</div></div>
+<div class="drop"><div class="dn">Amanamu Eye</div><div class="dv">1.5 div</div></div>
+<div class="drop"><div class="dn">Omen of Abyssal Echoes</div><div class="dv">= Divine on floor</div></div>
+<div class="drop"><div class="dn">Heart of the Well Diamond</div><div class="dv">2 div raw · 25 div identified</div></div>
+<div class="drop"><div class="dn">Arbiter Frags (citadels)</div><div class="dv">Several div each</div></div>
+<div class="drop"><div class="dn">Abyssal Depths Bases</div><div class="dv">iLvl 80–81</div></div>
+</div>`
+}},
+{id:'strat_004',tier:'A',type:'league',name:'Ritual',sub:'Right of the Nameless · Belt Hunting',ret:'Budget: 10–15 div/hr · Expensive: profit/map · Jackpot: Mageblood/HH',
+stats:[{l:'Budget',v:'10–15 div/hr',c:'w'},{l:'Expensive',v:'Profit/map',c:'g'},{l:'Jackpot',v:'Mageblood/HH'}],
+tabs:[{label:'Core Loop',id:'r-loop'},{label:'Tablets',id:'r-tabs'},{label:'Atlas Tree',id:'r-atlas'},{label:'Belt Hunting',id:'r-belts'},{label:'Drops',id:'r-drops'}],
+panels:{'r-loop':`
+<div class="alert w"><span class="alert-lbl">💡 Key Mechanic</span>Hold Audience with the King in inventory → Crux of Nothingness nodes become visible on Atlas (hidden otherwise).</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Run ritual maps → save tribute → give excess to King → Audience with the King</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Hold Audience in inventory → find Crux on Atlas → fight King → Head of the King</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Bring Head to Kerarth effigy → select 6 maps ending in city tile. Foretold Proliferation maps FIRST.</div></li>
+<li class="step"><div class="snum">4</div><div class="stxt">Run Right of the Nameless — tribute + rerolls snowball through chain</div></li>
+<li class="step"><div class="snum">5</div><div class="stxt">Sell surplus Heads (130–160 div) · Call of Shadows (40–50ex) · Defer good omens</div></li>
+</ul>
+<div class="sec">Boss Kill Order Per Map</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Step 1</div><div class="kvv w">Kill MAP BOSS first → ritual in boss room → max favor</div></div>
+<div class="kvr"><div class="kvk">Step 2</div><div class="kvv w">SUMMONING CIRCLE ritual → boss carries into all subsequent rituals</div></div>
+<div class="kvr"><div class="kvk">Navigation</div><div class="kvv">Clouds of locusts point toward next ritual altar — follow them</div></div>
+</div>
+<div class="sec">Defer Rules</div>
+<ul class="bullets">
+<li class="bullet">Defer early and expensive · Buy cheap when out of rerolls</li>
+<li class="bullet">Skip anything under ~1 div · Save tribute for 3+ div items</li>
+<li class="bullet r">NEVER buy filler and run out before seeing a Mage Blood</li>
+<li class="bullet">Check map selection bounties — Mage Blood/HH can appear as direct reward when selecting RotN maps</li>
+</ul>`,
+'r-tabs':`
+<div class="trow"><div class="tslot">Slot 1</div><div class="tinfo"><div class="tn">Freedom of Faith (unique) — doubles all rerolls</div><div class="tm">MANDATORY. ~35–50ex.</div></div></div>
+<div class="trow"><div class="tslot">Slots 2–3</div><div class="tinfo"><div class="tn">Ritual tablets — rerolling favours 3 additional times × 2</div><div class="tm">Try to get +1 extra modifier on these. ~16–17 div each.</div></div></div>
+<div class="trow"><div class="tslot">Slot 4</div><div class="tinfo"><div class="tn">Ritual tablet — 2 modifiers (cheap, no +3 rerolls needed)</div><div class="tm">Budget slot.</div></div></div>
+<div class="sec">3 Tablet Mods (spread across slots 2–4, only #1 mandatory)</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">1 ★ MUST</div><div class="kvv w">Rerolling Favours cost 20–30% reduced tribute. Aim 28–30% if only one.</div></div>
+<div class="kvr"><div class="kvk">2</div><div class="kvv">Monsters Sacrificed grant 18–30% increased Tribute</div></div>
+<div class="kvr"><div class="kvk">3</div><div class="kvv">Favours 35–70% increased chance to be Omens</div></div>
+<div class="kvr"><div class="kvk">4</div><div class="kvv">Deferring Favours costs 20–30% reduced Tribute</div></div>
+</div>
+<div class="kv" style="margin-top:8px">
+<div class="kvr"><div class="kvk">Map</div><div class="kvv r">T16 6-mod MANDATORY — required for area level 80 and top omens</div></div>
+<div class="kvr"><div class="kvk">iLvl buff</div><div class="kvv g">T15 now baseline iLvl 79 — irradiated optional. Good omens drop at 79+.</div></div>
+</div>
+<div class="alert w"><span class="alert-lbl">💰 Sell This</span>Dropped tablet with 3 additional rerolls = ~15 div. Sell immediately.</div>`,
+'r-atlas':`
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Rush middle — Revive monsters magic/rare (tribute)</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Ritual altars: 15% built on Summoning Circles + boss ← critical (fracturing orb bug)</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Royal Tithe → Right of the Nameless → Ongoing Chance (6th map)</div></li>
+</ul>
+<div class="sec">Key Choices</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Tainted</div><div class="kvv w">Traveler of War → belts/charms/flasks → HH + Mageblood chance</div></div>
+<div class="kvr"><div class="kvk">Invigorated ★</div><div class="kvv w">Option 2 BEST — 50% skill damage (mostly doesn't apply) + 10% MORE items. Option 3 for max tribute (hard monsters).</div></div>
+<div class="kvr"><div class="kvk">Master</div><div class="kvv">Jado (tablet double) or Hilda (when fighting many bosses in late-chain rituals)</div></div>
+<div class="kvr"><div class="kvk">Shrine node</div><div class="kvv">25% chance shrine buffs boss → 20–30 jewels possible in one map</div></div>
+<div class="kvr"><div class="kvk">⚠ Locked</div><div class="kvv r">Mysterious Rights + Spreading Darkness locked until Bodok killed</div></div>
+</div>
+<div class="alert w"><span class="alert-lbl">🐛 Fracturing Orb Bug</span>Hidden Scars → From Distances Untold triggers on ALL ritual summoned bosses (not just cleansed areas). 3–5 fracturing orbs per map possible.</div>`,
+'r-belts':`
+<div class="alert w"><span class="alert-lbl">🎲 Belt Hunting</span>Mageblood + Headhunter confirmed drops. Expensive strat profitable without belts.</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Budget cost</div><div class="kvv">30–40ex per map</div></div>
+<div class="kvr"><div class="kvk">Budget profit</div><div class="kvv w">~10–15 div/hr from omens</div></div>
+<div class="kvr"><div class="kvk">Expensive cost</div><div class="kvv">~3–4 div per map</div></div>
+<div class="kvr"><div class="kvk">Expensive profit</div><div class="kvv g">~1 omen/map = pays for itself. Belts = bonus.</div></div>
+<div class="kvr"><div class="kvk">Belt freq.</div><div class="kvv">~every 10 hours (expensive)</div></div>
+</div>
+<div class="sec">RotN Advanced</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Proliferations</div><div class="kvv w">Apply to all subsequent maps — do these FIRST when selecting chain</div></div>
+<div class="kvr"><div class="kvk">Boss accumulation</div><div class="kvv">Map 6 = 5–6 bosses simultaneously — insane but very dangerous</div></div>
+<div class="kvr"><div class="kvk">Death penalty</div><div class="kvv r">Dying during boss WIPES all map content. Clear rituals BEFORE boss.</div></div>
+<div class="kvr"><div class="kvk">Limit</div><div class="kvv">Only ONE RotN active at a time</div></div>
+</div>`,
+'r-drops':`
+<div class="drops">
+<div class="drop"><div class="dn">Head of the King</div><div class="dv">130–160 div</div></div>
+<div class="drop"><div class="dn">Omen of Whittling</div><div class="dv">170–210 div</div></div>
+<div class="drop"><div class="dn">Fracturing Orbs</div><div class="dv">4–5 div (1–5/map)</div></div>
+<div class="drop"><div class="dn">Omen of Chance</div><div class="dv">500 exalts</div></div>
+<div class="drop"><div class="dn">Sinestral Eraser</div><div class="dv">High value</div></div>
+<div class="drop"><div class="dn">From Nothing (King)</div><div class="dv">Up to 100 div</div></div>
+</div>
+<div class="alert w"><span class="alert-lbl">💡 Hold Omens</span>Do NOT sell omens early — prices rise every league. All omens except Omen of Light drop from Ritual.</div>`
+}},
+{id:'strat_002',tier:'A+',type:'league',name:'Expedition',sub:'Verisium / Aldurs — BawLoch + Bos (Pastron)',ret:'3+ div/map baseline · 10–50+ div on Aldurs Saga hits',
+stats:[{l:'Return',v:'3+ div/map',c:'g'},{l:'Consistency',v:'High',c:'g'},{l:'Entry',v:'~2 div logbook'}],
+tabs:[{label:'Core Loop',id:'e-loop'},{label:'Rumors',id:'e-rum'},{label:'Grand Exped.',id:'e-grand'},{label:'Sagas',id:'e-sag'}],
+panels:{'e-loop':`
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Run T14+ maps → hug edges to trigger Logbook spawns</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Check Island Rumors BEFORE activating logbook — they tell you what's inside</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Fallen Starlight? → guaranteed 8-rune pick → Alders Saga (~14 div)</div></li>
+<li class="step"><div class="snum">4</div><div class="stxt">Scout runes first, skip 3-rune, always check purple runes</div></li>
+<li class="step"><div class="snum">5</div><div class="stxt">Trade Tujen at 50–60% of ask → Divines, Exalts, gear</div></li>
+</ul>
+<div class="sec">Atlas Setup</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Faction</div><div class="kvv w">Jaydo's Spycraft → Eastern Knowledge (10% remnant reroll, rarest outcome)</div></div>
+<div class="kvr"><div class="kvk">Aldurs: run if</div><div class="kvv g">5+ Remnant modifier slots</div></div>
+<div class="kvr"><div class="kvk">Aldurs: sell if</div><div class="kvv w">Only 1 Grand Expedition → ~3 div flat</div></div>
+</div>`,
+'e-rum':`
+<div class="alert w"><span class="alert-lbl">💡 Key Insight</span>Island Rumors tell you what's inside BEFORE spending a logbook. Always read them.</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Fallen Starlight ★</div><div class="kvv w">Guaranteed 8-rune pick → Alders Saga (~14 div). Not RNG.</div></div>
+<div class="kvr"><div class="kvk">Unknown Ruins ★</div><div class="kvv w">FREE biome — explode 3 Precursor Lay Lines → Beacon → saves ~2 div</div></div>
+<div class="kvr"><div class="kvk">Starrinker</div><div class="kvv">Utrit boss spawns</div></div>
+<div class="kvr"><div class="kvk">Sulfite / Cave</div><div class="kvv">Good remnant layout</div></div>
+</div>`,
+'e-grand':`
+<div class="kv">
+<div class="kvr"><div class="kvk">Skip</div><div class="kvv r">3-rune remnants</div></div>
+<div class="kvr"><div class="kvk">Always check</div><div class="kvv w">Purple runes — divine possible even on 4-rune</div></div>
+<div class="kvr"><div class="kvk">Currency chest ★</div><div class="kvv w">~1 in 15 chance for divine</div></div>
+</div>
+<ul class="bullets">
+<li class="bullet">Scout ALL runes before committing path</li>
+<li class="bullet">Last explosive placed → checkpoint → return to start safely</li>
+<li class="bullet">Bad map? 1 explosive → kill first wave → done</li>
+</ul>`,
+'e-sag':`
+<div class="kv">
+<div class="kvr"><div class="kvk">Alders Saga</div><div class="kvv w">~14 div. All Verisium remnants 6+ rune slots. Don't mix with boss sagas.</div></div>
+<div class="kvr"><div class="kvk">Oroof ★</div><div class="kvv w">Best boss — 20ex saga. Strong drops.</div></div>
+<div class="kvr"><div class="kvk">Medvet</div><div class="kvv">Drops Vorana's Siege gem.</div></div>
+<div class="kvr"><div class="kvk">Vorana</div><div class="kvv r">BUGGED — skip</div></div>
+</div>`
+}},
+{id:'strat_012',tier:'A',type:'league',name:'Boss Zone Rushing',sub:'Breach + King + Halls — Ronarray (Zero Investment)',ret:'18–23 div/hr (fast build) · 10–15 div/hr (slower)',
+stats:[{l:'Return',v:'18–23 div/hr',c:'g'},{l:'Investment',v:'Near Zero',c:'g'},{l:'Difficulty',v:'Easy'}],
+tabs:[{label:'Core Loop',id:'bz-loop'},{label:'Targets',id:'bz-targets'},{label:'Setup',id:'bz-setup'}],
+panels:{'bz-loop':`
+<div class="alert w"><span class="alert-lbl">💡 Philosophy</span>Pick ONE side of Atlas after fortress. Rush toward boss zones. Kill boss, exit. No clearing needed.</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Keep Breach Stones + Audience with King in inventory AT ALL TIMES while traveling</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Rush maps — run to boss, kill, exit. Don't clear monsters.</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">When hitting Patriarch/Matriarch Hall → swap to 95%+ waystone drop map + irradiated tablets</div></li>
+<li class="step"><div class="snum">4</div><div class="stxt">When hitting Breach zone → swap master to Jado (Untold Histories for lineage gems)</div></li>
+<li class="step"><div class="snum">5</div><div class="stxt">Accumulate Grand Mirrors — save for future juiced farming sessions</div></li>
+</ul>`,
+'bz-targets':`
+<div class="drops">
+<div class="drop"><div class="dn">Breach Lord Sack</div><div class="dv">5.4 div · drop 2 = 10 div</div></div>
+<div class="drop"><div class="dn">Head of the King</div><div class="dv">~1.8 div each</div></div>
+<div class="drop"><div class="dn">Origin Cradle</div><div class="dv">~3.5 div</div></div>
+<div class="drop"><div class="dn">Origin Spark</div><div class="dv">~2.4 div</div></div>
+<div class="drop"><div class="dn">Diamond Jewel (rare)</div><div class="dv">~13 div · 1–2 per 5h</div></div>
+<div class="drop"><div class="dn">Anomaly Maps (bonus)</div><div class="dv">Lineage gems jackpot</div></div>
+</div>
+<div class="sec">Grand Mirrors</div>
+<div class="alert w"><span class="alert-lbl">💡 Save For Later</span>Grand Mirrors spawn 200% Delirium fog on map cluster. Use during future Breach/Ritual/Abyss sessions — doubles tablet effects.</div>`,
+'bz-setup':`
+<div class="sec">Tablets</div>
+<div class="trow"><div class="tslot">General</div><div class="tinfo"><div class="tn">1× Delirium tablet (any basic rare)</div><div class="tm">Sets up Grand Mirrors as you travel. Drop if no Delirium tree.</div></div></div>
+<div class="trow"><div class="tslot">Halls</div><div class="tinfo"><div class="tn">3× Irradiated tablets — 40% increased waystone quantity</div><div class="tm">~10ex each. Aim 95%+ waystone drop chance on map to drop 2 fragments instead of 1.</div></div></div>
+<div class="sec">Master Swaps</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">General rushing</div><div class="kvv w">Duriani — Hidden Patterns (10% skip to nearby map) + Head of Snake (citadel reveals)</div></div>
+<div class="kvr"><div class="kvk">Breach zones</div><div class="kvv w">Jado — Untold Histories (35% lineage gem chance from Breach)</div></div>
+</div>`
+}},
+{id:'strat_011',tier:'A',type:'league',name:'Delirium Boss Rushing',sub:'Regular Mirrors + 200% Fog — Distilled Emotions',ret:'~1.5–2 div profit/map · ~170 div per 100 maps',
+stats:[{l:'Return',v:'1.5–2 div/map',c:'g'},{l:'Investment',v:'~50ex/tablet',c:'w'},{l:'Difficulty',v:'Med / Hard (fog)'}],
+tabs:[{label:'Core Loop',id:'d-loop'},{label:'Distilled Emotions',id:'d-em'},{label:'200% Fog',id:'d-fog'},{label:'Splinter Farm',id:'d-splint'}],
+panels:{'d-loop':`
+<div class="sec">Strategy Overview</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Tablets</div><div class="kvv">3× Delirium tablets — increased chance to spawn Delirium bosses (~50ex each)</div></div>
+<div class="kvr"><div class="kvk">Master</div><div class="kvv">Hilda (regular) · Duriani (200% fog — free irradiated = 3 delirium tablets)</div></div>
+<div class="kvr"><div class="kvk">Route</div><div class="kvv w">Forest → Grass → Desert → Mountain. SKIP Swamp + Water biomes.</div></div>
+</div>
+<div class="sec">How to Run</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Run delirium tablet maps through Forest/Grass biomes — activate shards on path</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Kill rare monsters on path to boss. Orange/red shards = Delirium bosses — HIGH splinter rate.</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Kill map boss → end encounter → splinters drop at very end</div></li>
+</ul>
+<div class="alert r"><span class="alert-lbl">⚠ Skip Loathsome Mire</span>Red shard that spawns amulet area — skip every time. Ruins map flow, low value.</div>
+<div class="alert w"><span class="alert-lbl">💡 Splinters Not Dropping?</span>Complete the Delirium quest line first.</div>`,
+'b-em':`
+<div class="sec">Distilled Emotions — The Core of This Strat</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">How</div><div class="kvv">5% chance per map from certain boss types</div></div>
+<div class="kvr"><div class="kvk">Beast bosses ★</div><div class="kvv w">~11 div each → TARGET</div></div>
+<div class="kvr"><div class="kvk">Construct bosses ★</div><div class="kvv w">~6 div each → TARGET</div></div>
+<div class="kvr"><div class="kvk">Humanoid bosses</div><div class="kvv r">Cheap — skip/avoid</div></div>
+</div>
+<div class="sec">Biome Priority for Beast/Construct Bosses</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Tier 1 ★</div><div class="kvv w">Forest + Grass — most beast and construct bosses</div></div>
+<div class="kvr"><div class="kvk">Tier 2</div><div class="kvv">Desert — close third</div></div>
+<div class="kvr"><div class="kvk">Tier 3</div><div class="kvv">Mountain</div></div>
+<div class="kvr"><div class="kvk">Skip</div><div class="kvv r">Swamp + Water — not worth running</div></div>
+</div>
+<div class="alert w"><span class="alert-lbl">💡 Math</span>5% chance per map targeting right bosses = ~1 expensive liquid per 20 maps. That's why this strat works.</div>`,
+'d-fog':`
+<div class="sec">200% Delirium Fog</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">How to spawn</div><div class="kvv">5% chance per map boss kill with delirium tablet → Grand Mirror spawns nearby → creates fog cluster</div></div>
+<div class="kvr"><div class="kvk">Buildup</div><div class="kvv">0% → builds per map → caps at 200%. All maps in cluster stay at 200% once reached.</div></div>
+<div class="kvr"><div class="kvk">Difficulty</div><div class="kvv r">Some of the hardest content in the game. Bosses can have 10M+ HP.</div></div>
+<div class="kvr"><div class="kvk">Master</div><div class="kvv w">Duriani — generic effectiveness + rare monster effectiveness + free irradiated (fixed)</div></div>
+<div class="kvr"><div class="kvk">How to run</div><div class="kvv">Clear more thoroughly than regular. Don't skip rare monsters. Much more valuable.</div></div>
+</div>`,
+'d-splint':`
+<div class="alert w"><span class="alert-lbl">💡 Different Goal</span>Don't care about 200% fog. Maximize Simulacrum Splinter drops via Grand Mirrors. Requires semi-strong character (must clear most of map before fog runs out).</div>
+<div class="sec">Grand Mirror Generation</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">How</div><div class="kvv">Run T15 + delirium tablets → kill map boss WHILE STILL IN delirium fog → high chance Grand Mirror spawns nearby</div></div>
+<div class="kvr"><div class="kvk">⚠ Critical</div><div class="kvv r">Must kill boss INSIDE the fog or Grand Mirror will not proc</div></div>
+<div class="kvr"><div class="kvk">Key node</div><div class="kvv w">Tablets have double effect in areas with Grand Mirror — BOTH prefixes AND suffixes doubled</div></div>
+</div>
+<div class="sec">Tablets</div>
+<div class="trow"><div class="tslot">×2</div><div class="tinfo"><div class="tn">Increased Mirror Shard + increased Simulacrum Splinter stack size</div></div></div>
+<div class="trow"><div class="tslot">×1</div><div class="tinfo"><div class="tn">Increased Fracturing Mirror + increased Simulacrum Splinter stack size</div></div></div>
+<div class="kv" style="margin-top:6px"><div class="kvr"><div class="kvk">Map tier</div><div class="kvv">T16 for Grand Mirror runs — higher tier = more splinters at end</div></div></div>
+<div class="sec">In-Map Mechanics</div>
+<ul class="bullets">
+<li class="bullet"><strong>Mirror Shards</strong> — icons on delirium progress bar (blue/purple/orange). Walk over ALL, kill spawned mobs. Orange = big splinter multiplier.</li>
+<li class="bullet"><strong>Fracturing Mirrors</strong> — small blue pockets scattered in map. Walk over ones along path, kill delirium mobs.</li>
+<li class="bullet w" style="color:var(--gold2)">Pop everything BEFORE killing map boss = max splinter multiplier</li>
+</ul>
+<div class="sec">Real Results — 30 Maps</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Normal maps</div><div class="kvv">Cost 19 div → 40 div profit (3× Mirror Shard tablets)</div></div>
+<div class="kvr"><div class="kvk">Grand Mirror maps</div><div class="kvv g">Cost 28 div → Revenue 95 div → Profit 67 div</div></div>
+<div class="kvr"><div class="kvk">Splinters</div><div class="kvv w">~2,490 total (8.3 Simulacrum) · ~83/map avg</div></div>
+<div class="kvr"><div class="kvk">Per map</div><div class="kvv w">~3.2 div/map (Grand Mirror)</div></div>
+</div>
+<div class="alert w"><span class="alert-lbl">💰 Simulacrum Value</span>~6–7 div per Simulacrum (300 splinters). 8 simulacrums alone = 56–64 div, already covers tablet cost. Tablets resell ~40ex each. Bonus liquid emotions can also drop (e.g. Potent Liquid Contempt ~7-8 div).</div>`
+}},
+{id:'strat_008',tier:'A',type:'league',name:'Temple + Anomaly Maps',sub:'Atziri + Lineage Gem Hunting',ret:'~5 div/rotation · Lineage gems 58–230 div · Ai Communion ~70 div',
+stats:[{l:'Rotation',v:'~5 div',c:'w'},{l:'Jackpot',v:'58–230 div',c:'w'},{l:'Difficulty',v:'Easy (Atziri hard)'}],
+tabs:[{label:'Temple Rotation',id:'t-rot'},{label:'Anomaly Maps',id:'t-anom'},{label:'Drops',id:'t-drops'}],
+panels:{'t-rot':`
+<div class="alert w"><span class="alert-lbl">💡 Two-Run Rotation</span>Run 1: Kill Architect only. Run 2: Kill Architect + Atziri. Repeat.</div>
+<div class="sec">Run 1 — Architect Only</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Connect path to Architect. Place other rooms randomly (they destabilize and clear path).</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Complete 5+ rooms on way — required to access Architect chamber</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Kill Architect → use console → add Royal Access Chamber on path + 2 other rooms</div></li>
+</ul>
+<div class="sec">Run 2 — Architect + Atziri</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Connect path to Atziri Chamber AND Royal Access Chamber AND Architect</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Kill Architect → collect reward rooms on path</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Go to Atziri → fight → PICK UP MEDALLION before leaving (cannot go back)</div></li>
+<li class="step"><div class="snum">4</div><div class="stxt">Go to vault → collect rewards</div></li>
+</ul>
+<div class="sec">Room Priority</div>
+<ul class="bullets">
+<li class="bullet w" style="color:var(--gold2)">1. Extractor Chamber — Orb of Extraction</li>
+<li class="bullet">2. Currency rooms — ~1 div per 4 chests, 4 divines possible in one room</li>
+<li class="bullet">3. Lineage Gem rooms (~50 div gem occasional)</li>
+<li class="bullet">4. Tablets · 5. Runes (~5ex — basically useless)</li>
+</ul>
+<div class="alert r"><span class="alert-lbl">⚠ Level Bug</span>Don't restart from same map — bugs to iLvl 78. Use fresh maps for iLvl 80.</div>`,
+'t-anom':`
+<div class="sec">Anomaly Maps — Lineage Gems</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Sacred Reservoir ★</div><div class="kvv w">Desert swirl · Gukan gem · ~150–160 div</div></div>
+<div class="kvr"><div class="kvk">Jade Isles ★</div><div class="kvv w">Water swirl · Rockyata's Flow · ~114–120 div</div></div>
+<div class="kvr"><div class="kvk">Mansion</div><div class="kvv">Vampire hut · Rigwald gem · ~58 div</div></div>
+</div>
+<div class="sec">How to Unlock</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Find swirling anomaly icon on Atlas (water/desert swirl)</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Complete surrounding maps (sometimes 1, sometimes all 3)</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Find and press totem inside one of those maps → boss map unlocks</div></li>
+<li class="step"><div class="snum">4</div><div class="stxt">Run boss map. Drop is NOT guaranteed — normal to fail multiple times.</div></li>
+</ul>
+<div class="sec">Jado Nodes for Anomaly Hunting</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Unforeseen Threats ★</div><div class="kvv w">5% chance nearby anomaly revealed on map completion — most important</div></div>
+<div class="kvr"><div class="kvk">Untold Histories ★</div><div class="kvv w">35% increased lineage gem chance — swap out 20% random content for this</div></div>
+</div>
+<div class="alert w"><span class="alert-lbl">💡 Vision of Paradise</span>Run same anomaly map twice (~7 div cost). Worth it on average — always use on Sacred Reservoir.</div>`,
+'t-drops':`
+<div class="drops">
+<div class="drop"><div class="dn">Ai Communion gem</div><div class="dv">~70 div (Atziri)</div></div>
+<div class="drop"><div class="dn">Diamond Jewel</div><div class="dv">50–150+ div (identify!)</div></div>
+<div class="drop"><div class="dn">Gukan (Sacred Reservoir)</div><div class="dv">~150–160 div</div></div>
+<div class="drop"><div class="dn">Rockyata's Flow (Jade Isles)</div><div class="dv">~114–120 div</div></div>
+<div class="drop"><div class="dn">Rigwald (Mansion)</div><div class="dv">~58 div</div></div>
+<div class="drop"><div class="dn">Vaal Cultivation Orb</div><div class="dv">~50 exalts</div></div>
+</div>
+<div class="alert r"><span class="alert-lbl">⚠ Don't Underprice</span>Diamond Jewels — check market 2 days after dropping. Often 50–150+ div.</div>`
+}},
+{id:'strat_009',tier:'A',type:'league',name:'Ritual Farm v2',sub:'Budget Multi-Mechanic — Project (twitch.tv/project2)',ret:'1.5 div/map (no luck) · 1.8 div/map avg — 31–37 div per 20 maps',
+stats:[{l:'Investment',v:'Very Low',c:'g'},{l:'Return',v:'1.5–1.8/map',c:'g'},{l:'Difficulty',v:'Easy'}],
+tabs:[{label:'Overview',id:'rv-ov'},{label:'Setup',id:'rv-set'},{label:'Atlas',id:'rv-atl'},{label:'Results',id:'rv-res'}],
+panels:{'rv-ov':`
+<div class="alert w"><span class="alert-lbl">💡 Philosophy</span>Stack cheap mechanics. Main profit = Omens + tablets + Audience with King. NOT uniques.</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Ritual ★</div><div class="kvv">Main mechanic. Omen chance tablet.</div></div>
+<div class="kvr"><div class="kvk">Summoning Circles</div><div class="kvv">Free map boss → loot + massive favor for all rituals</div></div>
+<div class="kvr"><div class="kvk">Research Strongbox</div><div class="kvv">Always alch + exalt fully. Currency every time. Do spirit-possessed ones too.</div></div>
+<div class="kvr"><div class="kvk">Rogue Exiles</div><div class="kvv">Currency + jewelry. Enter ritual = extra favor.</div></div>
+<div class="kvr"><div class="kvk">Shrines</div><div class="kvv">25% chance to buff MAP BOSS = loot explosion</div></div>
+<div class="kvr"><div class="kvk">Expedition</div><div class="kvv">Do it for logbook drops (~1.5 div each)</div></div>
+</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Rush map boss first — boss in ritual = in ALL following rituals = massive favor</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Clear map — Expedition, Strongboxes, Shrines, Exiles on the way</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Nothing valuable? → Offer to King → Audience with King (sell 40–50ex each)</div></li>
+</ul>`,
+'rv-set':`
+<div class="trow"><div class="tslot">KEY MOD</div><div class="tinfo"><div class="tn">Ritual tablet: increased chance to be omens (~20ex each)</div><div class="tm">1 tablet normally, 2–3 in city maps</div></div></div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Waystone</div><div class="kvv w">Only care about pack size (~20%). No rarity required.</div></div>
+</div>
+<div class="alert w"><span class="alert-lbl">💰 Check Before Selling</span>Dropped tablet with reroll-reward mod = 10–15 div. Always check.</div>`,
+'rv-atl':`
+<div class="kv">
+<div class="kvr"><div class="kvk">Summoning Circles</div><div class="kvv w">Overlord's Domain → instant circle when powerful boss present</div></div>
+<div class="kvr"><div class="kvk">Favored Villain</div><div class="kvv w">25% chance shrine buffs boss = loot explosion</div></div>
+<div class="kvr"><div class="kvk">Cryst. Pattern</div><div class="kvv">Opulence essence — 5–6 exalts each</div></div>
+<div class="kvr"><div class="kvk">Ritual choices</div><div class="kvv">Revived monsters 20% toughness (massive tribute) + Tainted (belts)</div></div>
+<div class="kvr"><div class="kvk">Water biome</div><div class="kvv">50% increased currency from chests</div></div>
+<div class="kvr"><div class="kvk">Mountain biome</div><div class="kvv">50% increased tablet quantity</div></div>
+</div>`,
+'rv-res':`
+<div class="drops">
+<div class="drop"><div class="dn">Raw divines</div><div class="dv">6 div</div></div>
+<div class="drop"><div class="dn">Chaos/chance orbs</div><div class="dv">528 exalts</div></div>
+<div class="drop"><div class="dn">Tablets dropped</div><div class="dv">317 exalts</div></div>
+<div class="drop"><div class="dn">Audience with King</div><div class="dv">533 exalts</div></div>
+<div class="drop"><div class="dn">Omen of Whittling</div><div class="dv">170ex (lucky)</div></div>
+<div class="drop"><div class="dn">Sinestral Annulment</div><div class="dv">450+ exalts</div></div>
+</div>
+<div class="kv" style="margin-top:8px">
+<div class="kvr"><div class="kvk">Total (no luck)</div><div class="kvv g">31 div per 20 maps</div></div>
+<div class="kvr"><div class="kvk">Per map</div><div class="kvv w">1.5–1.8 div/map</div></div>
+</div>`
+}},
+{id:'strat_003',tier:'A',type:'league',name:'Negative Rarity T16',sub:'Atlas Strategy — Airplane (10DMAP)',ret:'10–25 div/map at ~3 div entry cost',
+stats:[{l:'Return',v:'10–25 div/map',c:'g'},{l:'Entry Cost',v:'~3 div',c:'w'},{l:'Difficulty',v:'Medium'}],
+tabs:[{label:'How It Works',id:'n-how'},{label:'Never Do',id:'n-nev'}],
+panels:{'n-how':`
+<div class="alert w"><span class="alert-lbl">💡 Core Concept</span>Push Item Rarity to 0% or below → drops shift toward white bases → high iLvl white bases (81–82+) are extremely valuable to crafters.</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Gear</div><div class="kvv">Stack Reduced Item Rarity: rings, amulet, belt, boots, armour. Target -50% to -74% total.</div></div>
+<div class="kvr"><div class="kvk">Atlas Tree</div><div class="kvv r">NEVER take item rarity nodes. NEVER take Specialized Seeker.</div></div>
+<div class="kvr"><div class="kvk">Waystones</div><div class="kvv">Omen of Chaotic Rarity + Chaos Orb → removes rarity mods</div></div>
+</div>
+<div class="drops" style="margin-top:8px">
+<div class="drop"><div class="dn">Obliterator Bow</div><div class="dv">3–6 div</div></div>
+<div class="drop"><div class="dn">Fracturing Orbs</div><div class="dv">4–5 div each</div></div>
+<div class="drop"><div class="dn">Daggerfoot Sack Sandals</div><div class="dv">1–2 div</div></div>
+<div class="drop"><div class="dn">Greater Essence of Abrasion</div><div class="dv">~1 div</div></div>
+</div>`,
+'n-nev':`
+<div class="alert r"><span class="alert-lbl">⛔ Never Do These</span></div>
+<ul class="bullets">
+<li class="bullet r">Take any Item Rarity atlas node</li>
+<li class="bullet r">Take Specialized Seeker</li>
+<li class="bullet r">Use Jado's first modifier (can add rarity)</li>
+<li class="bullet r">Run maps with item rarity mods</li>
+<li class="bullet r">Kill boss BEFORE looting the map</li>
+<li class="bullet r">Use gear with positive item rarity</li>
+</ul>`
+}},
+{id:'strat_010',tier:'A',type:'league',name:'Casual Atlas Exploration',sub:'Map Crafting + Ring Flipping — Lit',ret:'Steady 1–4 div/map · Easy currency · Comfy playstyle',
+stats:[{l:'Investment',v:'Very Low',c:'g'},{l:'Consistency',v:'Med-High',c:'g'},{l:'Difficulty',v:'Easy'}],
+tabs:[{label:'Overview',id:'ca-ov'},{label:'2 Map Setups',id:'ca-maps'},{label:'Map Crafting',id:'ca-craft'}],
+panels:{'ca-ov':`
+<div class="alert w"><span class="alert-lbl">💡 Philosophy</span>Travel the Atlas, do everything naturally. Two map setups. Supplement with map crafting and ring flipping early league.</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Audience with King</div><div class="kvv w">~2 div each</div></div>
+<div class="kvr"><div class="kvk">Hive Lord Sack</div><div class="kvv w">~55 exalts</div></div>
+<div class="kvr"><div class="kvk">Simulacrum</div><div class="kvv w">~6 div</div></div>
+<div class="kvr"><div class="kvk">Origin Cradle</div><div class="kvv w">~40 exalts each</div></div>
+<div class="kvr"><div class="kvk">Jade Isle jackpot</div><div class="kvv w">100s div (Rakata/Gukan gem)</div></div>
+<div class="kvr"><div class="kvk">Master</div><div class="kvv">Duriani — 10% completing map makes nearby map accessible</div></div>
+</div>`,
+'ca-maps':`
+<div class="sec">Setup 1 — Farming Maps</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Filter</div><div class="kvv w">Effectiveness + Rarity + Item Rarity. ~50%+ combined. Always 6 mods.</div></div>
+<div class="kvr"><div class="kvk">Tablets</div><div class="kvv">Irradiated + Abyss (or any mechanic) + Overseer</div></div>
+<div class="kvr"><div class="kvk">How to run</div><div class="kvv">Do ALL mechanics on path. ~3–5 min/map.</div></div>
+</div>
+<div class="sec">Setup 2 — Citadel / Anomaly Maps</div>
+<div class="kv">
+<div class="kvr"><div class="kvk">Filter</div><div class="kvv w">Waystone drop chance 120%+</div></div>
+<div class="kvr"><div class="kvk">Tablets</div><div class="kvv">Irradiated + 2× waystone quantity (30%+ each)</div></div>
+<div class="kvr"><div class="kvk">How to run</div><div class="kvv">Rush boss only. ~2 min/map.</div></div>
+<div class="kvr"><div class="kvk">Master swap</div><div class="kvv">Duriani for normal → swap to Jado for Breach zones</div></div>
+</div>`,
+'ca-craft':`
+<div class="sec">Map Crafting</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Alch all maps → Exalt spam to 6 mods</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Filter: effectiveness + rarity + item rarity → keep for setup 1</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Filter: waystone drop 120%+ → keep for setup 2</div></li>
+<li class="step"><div class="snum">4</div><div class="stxt">Sell T16 leftovers ~10 chaos each · T15 leftovers ~2 exalts each</div></li>
+</ul>
+<div class="sec">Ring Flipping (Early League Only)</div>
+<ul class="steps">
+<li class="step"><div class="snum">1</div><div class="stxt">Pick up rings with T1–T2 res + good prefix from ground</div></li>
+<li class="step"><div class="snum">2</div><div class="stxt">Resistance Essence → Omen of Greater Exalt → slam twice</div></li>
+<li class="step"><div class="snum">3</div><div class="stxt">Target: flat damage + life = 1–4 div ring. Stop mid-league as standards rise.</div></li>
+</ul>`
+}}
+];
+
+let current=null,filterMode='all',searchQ='';
+const tierCols={S:'#e8c86a','A+':'#c9a84c',A:'#6a9a5a','B+':'#5a7a9a',REQ:'#b84040'};
+
+function buildList(){
+  const list=document.getElementById('strat-list');
+  list.innerHTML=STRATS.map(s=>`<div class="strat-item${current===s.id?' active':''}" data-id="${s.id}" data-tier="${s.tier}" data-type="${s.type}" onclick="select('${s.id}')"><div class="si-badge">${s.tier}</div><div class="si-info"><div class="si-name">${s.name}</div><div class="si-meta">${s.sub}</div></div></div>`).join('');
+  applyFilters();
+}
+
+function applyFilters(){
+  let vis=0;
+  document.querySelectorAll('.strat-item').forEach(item=>{
+    const s=STRATS.find(x=>x.id===item.dataset.id);
+    const mf=filterMode==='all'||(filterMode==='S'&&s.tier==='S')||(filterMode==='A'&&(s.tier==='A'||s.tier==='A+'))||(filterMode==='league'&&s.type==='league')||(filterMode==='meta'&&s.type==='meta');
+    const ms=!searchQ||s.name.toLowerCase().includes(searchQ)||s.sub.toLowerCase().includes(searchQ);
+    item.classList.toggle('hidden',!(mf&&ms));
+    if(mf&&ms)vis++;
+  });
+  document.getElementById('count-label').textContent=vis+' strateg'+(vis===1?'y':'ies');
+}
+
+function setFilter(f,el){filterMode=f;document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');applyFilters();}
+function doSearch(v){searchQ=v.toLowerCase().trim();applyFilters();}
+
+function select(id){
+  current=id;
+  const s=STRATS.find(x=>x.id===id);
+  document.querySelectorAll('.strat-item').forEach(el=>el.classList.toggle('active',el.dataset.id===id));
+  const tc=tierCols[s.tier]||'#7a6428';
+  const statsHtml=s.stats.map(st=>`<div class="dhs"><span class="dhs-label">${st.l}</span><span class="dhs-val ${st.c||''}">${st.v}</span></div>`).join('');
+  const tabBtns=s.tabs.map((t,i)=>`<button class="tab-btn${i===0?' on':''}" onclick="switchTab(this,'${t.id}')">${t.label}</button>`).join('');
+  const tabPanels=s.tabs.map((t,i)=>`<div class="tab-panel${i===0?' on':''}" id="${t.id}">${s.panels[t.id]||''}</div>`).join('');
+  document.getElementById('detail').innerHTML=`
+<div id="detail-header">
+  <div class="dh-top"><div class="dh-badge" style="--tier-col:${tc}">${s.tier}</div><div class="dh-info"><div class="dh-name">${s.name}</div><div class="dh-sub">${s.sub}</div></div></div>
+  <div class="dh-stats">${statsHtml}</div>
+</div>
+<div class="return-row"><span class="ret-label">Return</span><span class="ret-val">${s.ret}</span></div>
+<div class="tab-bar">${tabBtns}</div>
+<div>${tabPanels}</div>`;
+  if(window.innerWidth<=680)closePanel();
+  document.getElementById('main').scrollTop=0;
+}
+
+function switchTab(btn,panelId){
+  const d=document.getElementById('detail');
+  d.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
+  d.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById(panelId).classList.add('on');
+}
+
+function togglePanel(){
+  const p=document.getElementById('panel'),btn=document.getElementById('menu-btn'),ov=document.getElementById('overlay');
+  if(window.innerWidth<=680){const open=p.classList.toggle('open');btn.classList.toggle('open',open);ov.classList.toggle('show',open);}
+  else{const closed=p.classList.toggle('closed');btn.classList.toggle('open',!closed);}
+}
+function closePanel(){document.getElementById('panel').classList.remove('open');document.getElementById('menu-btn').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
+
+buildList();
+select('strat_006');
+</script>
+</body>
+</html>
