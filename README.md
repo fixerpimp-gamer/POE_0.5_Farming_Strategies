@@ -4,7 +4,7 @@ A community-driven, mobile-friendly reference for endgame farming strategies in 
 
 Browse 11 strategies (S/A tier) covering Abyss, Breach, Ritual, Expedition, Delirium, and more — each with tablet setups, Atlas tree priorities, master selections, and real profit breakdowns sourced from community guides and stream testing.
 
-🔗 **[Live Site](#)** *(replace with your GitHub Pages link)*
+🔗 **[[Link](https://github.com/fixerpimp-gamer/POE_0.5_Farming_Strategies/edit/main/README.md)]** *(replace with your GitHub Pages link)*
 
 ---
 
